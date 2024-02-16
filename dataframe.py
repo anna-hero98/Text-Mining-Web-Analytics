@@ -1,3 +1,4 @@
+import match
 import requests
 import pandas as pd
 
@@ -19,11 +20,13 @@ for dokumentnr in df['Dokumentnr']:
         if 'documents' in json_data:
             for document in json_data['documents']:
                 text = document['text']
+                #match.re.search(r'E')
                 extracted_df = extracted_df._append({'Dokumentnr': dokumentnr, 'Text': text}, ignore_index=True)
     else:
         print("Error fetching data for dokumentnr:", dokumentnr)
 
 print(extracted_df.head())
+
 
 
 """
