@@ -21,7 +21,41 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
         if 'documents' in json_data:
             for document in json_data['documents']:
                 text = document['text']
-                extracted_df = extracted_df._append({'Jahr':jahr,'Dokumentnr':dokumentnr,'Name':name,'Partei':partei,'Thema':thema,'Titel':titel,'Text':text}, ignore_index=True)
+
+                doc = nlp(text)
+
+                Parteien = ["(CDU/CSU):", "(DIE LINKE):", "(BÜNDNIS 90/DIE GRÜNEN):", "(SPD):", "(FDP):", "(AfD):"]
+
+                # Gesuchte Wortreihenfolge und Text nachfolgend bis zu einer anderen Wortfolge
+                search_sentence = "Dritten Gesetzes zur Änderung des Aufstiegsfortbildungsförderungsgesetzes"
+                Anfang = "Feist (CDU/CSU):"
+                following_sequence = "(DIE LINKE):"
+
+                count_search_sentence = 0
+                rede = ""
+
+                # Finden der Startposition der gesuchten Wortreihenfolge
+                for sent in doc.sents:
+                    if search_sentence in sent.text:
+                        count_search_sentence += 1
+                        if count_search_sentence == 2:
+                            # Finden der Startposition der gesuchten Wortreihenfolge
+                            start_position = text.find(Anfang)
+                            # -1 ist ein spezieller Wert für "nicht gefunden" oder "nicht vorhanden"
+                            if start_position != -1:
+                                # Wenn die gesuchte Wortreihenfolge gefunden wurde
+                                end_position = text.find(following_sequence, start_position)
+                                if end_position != -1:
+                                    # Wenn die nachfolgende Wortfolge gefunden wurde
+                                    rede = text[start_position:end_position]
+                                else:
+                                    # Wenn die nachfolgende Wortfolge nicht gefunden wurde
+                                    print("Die nachfolgende Wortfolge wurde nicht gefunden.")
+                            else:
+                                # Wenn die gesuchte Wortreihenfolge nicht gefunden wurde
+                                print("Die gesuchte Wortreihenfolge wurde nicht gefunden.")
+
+                extracted_df = extracted_df._append({'Jahr':jahr,'Dokumentnr':dokumentnr,'Name':name,'Partei':partei,'Thema':thema,'Titel':titel,'Text': rede}, ignore_index=True)
         else:
             print("Error fetching data for dokumentnr:", dokumentnr)
 
