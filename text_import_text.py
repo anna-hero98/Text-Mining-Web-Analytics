@@ -22,16 +22,17 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
             for document in json_data['documents']:
                 text = document['text']
 
+                nlp.max_length = 3000000
                 doc = nlp(text)
-
-                Parteien = ["(CDU/CSU):", "(DIE LINKE):", "(BÜNDNIS 90/DIE GRÜNEN):", "(SPD):", "(FDP):", "(AfD):"]
+                text = text.replace('\u00A0', ' ')
 
                 # Gesuchte Wortreihenfolge und Text nachfolgend bis zu einer anderen Wortfolge
-                search_sentence = "Dritten Gesetzes zur Änderung des Aufstiegsfortbildungsförderungsgesetzes"
-                Anfang = "Feist (CDU/CSU):"
-                following_sequence = "(DIE LINKE):"
+                search_sentence = titel
+                start = f"{name} ({partei}):"
+                parteien = ["(CDU/CSU):","(DIE LINKE):","(BÜNDNIS 90/DIE GRÜNEN):", "(SPD):", "(FDP):", "(AfD):"]
 
                 count_search_sentence = 0
+                count_partei = 0
                 rede = ""
 
                 # Finden der Startposition der gesuchten Wortreihenfolge
@@ -40,14 +41,19 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
                         count_search_sentence += 1
                         if count_search_sentence == 2:
                             # Finden der Startposition der gesuchten Wortreihenfolge
-                            start_position = text.find(Anfang)
+                            start_position = text.find(start)
                             # -1 ist ein spezieller Wert für "nicht gefunden" oder "nicht vorhanden"
                             if start_position != -1:
-                                # Wenn die gesuchte Wortreihenfolge gefunden wurde
-                                end_position = text.find(following_sequence, start_position)
-                                if end_position != -1:
-                                    # Wenn die nachfolgende Wortfolge gefunden wurde
-                                    rede = text[start_position:end_position]
+                                # Wenn die gesuchte Wortreihenfolge gefunden wurde, dann Abgleich mit Parteien Liste
+                                for partei in parteien:
+                                    count_partei += 1
+                                    if count_partei == 2:
+                                        end_position = text.find(partei, start_position)
+                                        if end_position != -1:
+                                            # Wenn die nachfolgende Wortfolge gefunden wurde
+                                            rede = text[start_position:end_position]
+                                            print(rede)
+                                            break
                                 else:
                                     # Wenn die nachfolgende Wortfolge nicht gefunden wurde
                                     print("Die nachfolgende Wortfolge wurde nicht gefunden.")
@@ -58,51 +64,4 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
                 extracted_df = extracted_df._append({'Jahr':jahr,'Dokumentnr':dokumentnr,'Name':name,'Partei':partei,'Thema':thema,'Titel':titel,'Text': rede}, ignore_index=True)
         else:
             print("Error fetching data for dokumentnr:", dokumentnr)
-
 print(extracted_df.head())
-
-"""
-# Check if 'documents' key exists in json_data
-if 'documents' in json_data:
-    # Iterate over each document
-    for document in json_data['documents']:
-        # Access the 'text' field for each document
-        text = document['text']
-        print(text)
-else:
-    print("No documents found.")
-
-doc = nlp(text)
-
-Parteien = ["(CDU/CSU):","(DIE LINKE):","(BÜNDNIS 90/DIE GRÜNEN):", "(SPD):", "(FDP):", "(AfD):"]
-
-# Gesuchte Wortreihenfolge und Text nachfolgend bis zu einer anderen Wortfolge
-search_sentence = "Dritten Gesetzes zur Änderung des Aufstiegsfortbildungsförderungsgesetzes"
-Anfang = "Feist (CDU/CSU):"
-following_sequence = "(DIE LINKE):"
-
-count_search_sentence = 0
-
-# Finden der Startposition der gesuchten Wortreihenfolge
-for sent in doc.sents:
-    if search_sentence in sent.text:
-        count_search_sentence += 1
-        if count_search_sentence == 2:
-            # Finden der Startposition der gesuchten Wortreihenfolge
-            start_position = text.find(Anfang)
-            # -1 ist ein spezieller Wert für "nicht gefunden" oder "nicht vorhanden"
-            if start_position != -1:
-                # Wenn die gesuchte Wortreihenfolge gefunden wurde
-                end_position = text.find(following_sequence, start_position)
-                if end_position != -1:
-                    # Wenn die nachfolgende Wortfolge gefunden wurde
-                    desired_text = text[start_position:end_position]
-                    print(desired_text)
-                else:
-                    # Wenn die nachfolgende Wortfolge nicht gefunden wurde
-                    print("Die nachfolgende Wortfolge wurde nicht gefunden.")
-            else:
-                # Wenn die gesuchte Wortreihenfolge nicht gefunden wurde
-                print("Die gesuchte Wortreihenfolge wurde nicht gefunden.")
-
-"""
