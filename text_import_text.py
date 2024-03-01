@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+import re
 
 # parteien = {"(CDU/CSU):","(DIE LINKE):","(BÜNDNIS 90/DIE GRÜNEN):", "(SPD):", "(FDP):", "(AfD):"}
 
@@ -22,17 +23,34 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
             for document in json_data['documents']:
                 text = document['text']
 
-                text = text.replace('\u00A0', ' ') #um Fehler bei Dr. xx zu vermeiden
+                # Entferne Zeilenumbrüche und nicht-sichtbare Leerzeichen
+                text = re.sub(r'\s+', ' ', text).strip()
 
                 # Gesuchte Wortreihenfolge und Text nachfolgend bis zu einer anderen Wortfolge
                 search_sentence = titel
-                start = f"{name} ({partei}):"
+
+                """titel = search_sentence
+                # Split the sentence into words
+                words = titel.split()
+                # Extract the first two words and the last word
+                shortened_title = " ".join(words[2:-1])
+
+                # Shorten the last word by 10 letters
+                if len(words[-1]) > 10:
+                    shortened_last_word = words[-1][:-10]
+                    shortened_title += " " + shortened_last_word
+                else:
+                    # If the last word is already shorter than 10 letters, keep it unchanged
+                    shortened_title += " " + words[-1]"""
+
+
+                #start = f"{name} ({partei}):"
+                start = f"{name} {partei}:"
                 parteien = ["(DIE LINKE):", "(CDU/CSU):", "(BÜNDNIS 90/DIE GRÜNEN):", "(SPD):", "(FDP):", "(AfD):"]
                 rede = ""
 
                 # Suchen nach dem zweiten Vorkommen des Ausrufezeichens
                 titel_index = text.find(search_sentence, text.find(search_sentence) + 1)
-
                 # Extrahieren des Teils nach dem zweiten Vorkommen des Ausrufezeichens
                 result = text[titel_index:].strip()
 
@@ -54,5 +72,4 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
     else:
         print("Error fetching data for dokumentnr:", dokumentnr)
 print(extracted_df.head())
-
 
