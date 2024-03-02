@@ -4,7 +4,7 @@ import re
 
 # parteien = {"(CDU/CSU):","(DIE LINKE):","(BÜNDNIS 90/DIE GRÜNEN):", "(SPD):", "(FDP):", "(AfD):"}
 
-filepath = 'Beispielliste.csv'
+filepath = 'input_csv.csv'
 df = pd.read_csv(filepath, sep=';')
 extracted_df = pd.DataFrame(columns=['Jahr', 'Dokumentnr', 'Name', 'Partei', 'Thema', 'Titel', 'Text'])
 
@@ -24,11 +24,23 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
                 text = document['text']
 
                 # Entferne Zeilenumbrüche und nicht-sichtbare Leerzeichen
+                # Regular Expression verwenden, um Trennzeichen zu eliminieren
+                text = re.sub(r'(?<!\s)-(?!\s)(?=\s|$)', '', text)
+                text = re.sub(r'\n+', ' ', text).strip()
                 text = re.sub(r'\s+', ' ', text).strip()
-
+                text = re.sub(r'[^\w\s,-]+', '', text)
                 # Gesuchte Wortreihenfolge und Text nachfolgend bis zu einer anderen Wortfolge
-                search_sentence = titel
-
+                words = titel.split()
+                # Extract the first two words and the last word
+                shortened_title = " ".join(words[2:-1])
+                print(shortened_title)
+                # Shorten the last word by 10 letters
+                if len(words[-1]) > 10:
+                    shortened_last_word = words[-1][:-10]
+                    shortened_title += " " + shortened_last_word
+                else:
+                    # If the last word is already shorter than 10 letters, keep it unchanged
+                    shortened_title += "" + words[-1]
                 """titel = search_sentence
                 # Split the sentence into words
                 words = titel.split()
@@ -50,7 +62,7 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
                 rede = ""
 
                 # Suchen nach dem zweiten Vorkommen des Ausrufezeichens
-                titel_index = text.find(search_sentence, text.find(search_sentence) + 1)
+                titel_index = text.find(shortened_title, text.find(shortened_title) + 1)
                 # Extrahieren des Teils nach dem zweiten Vorkommen des Ausrufezeichens
                 result = text[titel_index:].strip()
 
@@ -72,4 +84,3 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
     else:
         print("Error fetching data for dokumentnr:", dokumentnr)
 print(extracted_df.head())
-
