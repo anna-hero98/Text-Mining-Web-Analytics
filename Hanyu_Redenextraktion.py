@@ -55,8 +55,8 @@ def build_and_process_dataframe():
                     titel_index = text.find(shortened_title, text.find(shortened_title) + 1)
                     # Extrahieren des Teils nach dem zweiten Vorkommen des Titels
                     result = text[titel_index:].strip()
-                    # result in Sätze mithilfe von re aufteilen
-                    sentences = re.split(r'(?<=[.!?])\s+', result)
+                    # result in Sätze mithilfe von re aufteilen, (?=[A-Z]+\. -> Außname für Mr. Dr. M. etc.
+                    sentences = re.split(r'(?<=[.!?])\s+(?=[A-Z]+\. )', result)
 
                     # Add newline character after each sentence
                     result_new = '\n'.join(sentences)
@@ -65,18 +65,25 @@ def build_and_process_dataframe():
                     rede = ""
 
                     start = f"{name} ({partei}):"
+
                     if start in result_new:
+                        print("Name + Partei")
                         start = f"{name} ({partei}):"
-                        start_index = result.find(start, result.find(start))
+                        print(start)
+
+                        start_index = result_new.find(start, result_new.find(start))
                         start_index += len(start)
                     else:
+                        print("Name + Zusatz + Partei")
                         start = f"{name} \(.+\) \({partei}\):" #Findet z.B. Hartwig Fischer (Göttingen) (CDU/CSU):
+
 
                         regex_match = re.compile(start)
                         match = re.findall((regex_match), result_new)
                         newstart = "".join(match)  # re.findall Ergebnis -> Liste, diese in string umwandeln
+                        print(newstart)
 
-                        start_index = result.find(newstart, result.find(newstart))
+                        start_index = result_new.find(newstart, result_new.find(newstart))
                         start_index += len(newstart)
 
 
