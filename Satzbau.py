@@ -19,13 +19,14 @@ if 'documents' in json_data:
         # spaCy-Verarbeitung
         doc = nlp(text)
 
-        # Separates Zählen für jede Wortart
+        ##Analyse des Sprachstils
+        # Separates Zählen für jede Wortart //Häufigkeiten von Substantiven/Verben/Adjektiven/Adverbien
         nouns = Counter([token.text for token in doc if token.pos_ == "NOUN"])
         verbs = Counter([token.text for token in doc if token.pos_ == "VERB"])
         adjectives = Counter([token.text for token in doc if token.pos_ == "ADJ"])
         adverbs = Counter([token.text for token in doc if token.pos_ == "ADV"])
 
-        # Ausgabe nach Wortart sortiert
+        # Ausgabe nach Wortart sortiert // Häufigkeit der vorkommenden Wörter Sub/Verb/Adj/Adv
         print("Substantive:")
         for word, freq in nouns.most_common():
             print(f"{word}: {freq}")
@@ -41,11 +42,14 @@ if 'documents' in json_data:
         print("\nAdverbien:")
         for word, freq in adverbs.most_common():
             print(f"{word}: {freq}")
-
-            print(f"Anzahl der Substantive: {sum(nouns.values())}")
-            print(f"Anzahl der Verben: {sum(verbs.values())}")
-            print(f"Anzahl der Adjektive: {sum(adjectives.values())}")
-            print(f"Anzahl der Adverbien: {sum(adverbs.values())}")
+        #Berechnung der Gesamtzahl der Sub/Verb/Adj/Adv
+        print(f"Anzahl der Substantive: {sum(nouns.values())}")
+        print(f"Anzahl der Verben: {sum(verbs.values())}")
+        print(f"Anzahl der Adjektive: {sum(adjectives.values())}")
+        print(f"Anzahl der Adverbien: {sum(adverbs.values())}")
 
     else:
         print("Keine Dokumente gefunden.")
+
+## Visualisierung: Tabelle mit Anzahl. Zeitangabe (1x Tabelle: Vor AFD Eintritt) (1x Tabelle: Nach AFD Eintritt),
+##mit Zeile pro Jahr + Häufigste Worte der S, Adv., V, Adj.
