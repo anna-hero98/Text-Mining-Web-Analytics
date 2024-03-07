@@ -27,8 +27,7 @@ def build_and_process_dataframe():
                 for document in json_data['documents']:
                     text = document['text']
 
-
-                    # Entfernt nicht-sichtbare Leerzeichen und nicht-sichtbare Leerzeichen
+                    # Entfernt Zeilenumbrüche und nicht-sichtbare Leerzeichen
                     text = re.sub(r'\s+', ' ', text.replace('\n', ' ')).strip()
                     # Ersetzt ' – ' mit ' - '
                     text = re.sub(r' – ', ' - ', text)
@@ -52,25 +51,40 @@ def build_and_process_dataframe():
                         # If the last word is already shorter than 10 letters, keep it unchanged
                         shortened_title += " " + words[-1]
 
-
-                    start = f"{name} ({partei}):"
-                    ende = "):"
-                    rede = ""
-
                     # Suchen nach dem zweiten Vorkommen des Titels
                     titel_index = text.find(shortened_title, text.find(shortened_title) + 1)
                     # Extrahieren des Teils nach dem zweiten Vorkommen des Titels
                     result = text[titel_index:].strip()
-                    start_index = result.find(start, result.find(start))
+                    # result in Sätze mithilfe von re aufteilen
+                    sentences = re.split(r'(?<=[.!?])\s+', result)
 
-                    start_index += len(start)
+                    # Add newline character after each sentence
+                    result_new = '\n'.join(sentences)
+
+                    ende = "):"
+                    rede = ""
+
+                    start = f"{name} ({partei}):"
+                    if start in result_new:
+                        start = f"{name} ({partei}):"
+                        start_index = result.find(start, result.find(start))
+                        start_index += len(start)
+                    else:
+                        start = f"{name} \(.+\) \({partei}\):" #Findet z.B. Hartwig Fischer (Göttingen) (CDU/CSU):
+
+                        regex_match = re.compile(start)
+                        match = re.findall((regex_match), result_new)
+                        newstart = "".join(match)  # re.findall Ergebnis -> Liste, diese in string umwandeln
+
+                        start_index = result.find(newstart, result.find(newstart))
+                        start_index += len(newstart)
+
 
                     end_position = result.find(ende, start_index)
                     if ende != -1:
                         rede = result[start_index:end_position].strip()
-                        #print(rede)
+                        # print(rede)
                         break
-
 
             extracted_df = extracted_df._append(
                         {'Jahr': jahr, 'Dokumentnr': dokumentnr, 'Name': name, 'Partei': partei, 'Thema': thema,
