@@ -6,7 +6,7 @@ import subprocess
 def build_and_process_dataframe():
 
     # parteien = {"(CDU/CSU):","(DIE LINKE):","(BÜNDNIS 90/DIE GRÜNEN):", "(SPD):", "(FDP):", "(AfD):"}
-    filepath = 'Beispielliste.csv'
+    filepath = 'input_df.csv'
     df = pd.read_csv(filepath, sep=';')
     #Zeilenumbrüche bei Titel rausfiltern
     df.replace('\n', '', regex=True, inplace=True)
@@ -26,13 +26,12 @@ def build_and_process_dataframe():
             if 'documents' in json_data:
                 for document in json_data['documents']:
                     text = document['text']
-
+                    # Ersetzt ' – ' mit ' - '
+                    text = re.sub(r'–', '-', text)
+                    # Entfernt Bindestrich nachdem ein Zeilenumbruch kommt
+                    text = re.sub(r'-\n\s*', '-', text)
                     # Entfernt Zeilenumbrüche und nicht-sichtbare Leerzeichen
                     text = re.sub(r'\s+', ' ', text.replace('\n', ' ')).strip()
-                    # Ersetzt ' – ' mit ' - '
-                    text = re.sub(r' – ', ' - ', text)
-                    # Entfernt Bindestrich nachdem ein Zeilenumbruch kommt
-                    text = re.sub(r'-\n', '', text)
 
                     # Gesuchte Wortreihenfolge und Text nachfolgend bis zu einer anderen Wortfolge
                     search_sentence = titel
@@ -61,6 +60,7 @@ def build_and_process_dataframe():
                     # Add newline character after each sentence
                     result_new = '\n'.join(sentences)
 
+
                     ende = "):"
                     rede = ""
 
@@ -73,10 +73,10 @@ def build_and_process_dataframe():
 
                         start_index = result_new.find(start, result_new.find(start))
                         start_index += len(start)
-                    else:
-                        print("Name + Zusatz + Partei")
-                        start = f"{name} \(.+\) \({partei}\):" #Findet z.B. Hartwig Fischer (Göttingen) (CDU/CSU):
 
+                    elif start != result_new:
+                        print("Name + Zusatz + Partei")
+                        start = f"{name} \(.+\) \({partei}\):"  # Findet z.B. Hartwig Fischer (Göttingen) (CDU/CSU):
 
                         regex_match = re.compile(start)
                         match = re.findall((regex_match), result_new)
@@ -85,6 +85,18 @@ def build_and_process_dataframe():
 
                         start_index = result_new.find(newstart, result_new.find(newstart))
                         start_index += len(newstart)
+                    else:
+                        print("Name")
+                        start = f"{name}.*:"
+
+                        regex_match = re.compile(start)
+                        match = re.findall((regex_match), result_new)
+                        newstart = "".join(match)  # re.findall Ergebnis -> Liste, diese in string umwandeln
+                        print(newstart)
+
+                        start_index = result_new.find(start, result_new.find(start))
+                        start_index += len(newstart)
+
 
 
                     end_position = result.find(ende, start_index)
