@@ -1,28 +1,7 @@
 import pandas as pd
 
-# API
-"""
-headers = {'Accept': 'application/json', 'Authorization': 'ApiKey rgsaY4U.oZRQKUHdJhF9qguHMkwCGIoLaqEcaHjYLF'}
+from Hanyu_Redenextraktion import build_and_process_dataframe
 
-extracted_df = pd.DataFrame(columns=['Dokumentnr', 'Text'])
-
-dokumentnr = input('Bitte Dokumentnummer eingeben: ')
-url = f'https://search.dip.bundestag.de/api/v1/plenarprotokoll-text?f.dokumentnummer={dokumentnr}'
-response = requests.get(url, headers=headers)
-
-if response.status_code == 200:
-    json_data = response.json()
-
-    for document in json_data['documents']:
-        text = document['text']
-        extracted_df = extracted_df._append({'Dokumentnr': dokumentnr, 'Text': text}, ignore_index=True)
-
-    print("Data fetched successfully for dokumentnr:", dokumentnr)
-    print(extracted_df.head())
-
-else:
-    print("Error fetching data for dokumentnr:", dokumentnr)
-"""
 # Sentiment Analyse
 def sentiment_analyse(extracted_df):
     # Importieren der Wortlisten
@@ -67,3 +46,7 @@ def sentiment_analyse(extracted_df):
     df_Sentimentwords_grouped = df_Sentimentwords_sorted.groupby('Dokumentnr')['Wert'].sum().reset_index()
 
     print(df_Sentimentwords_grouped)
+
+extracted_df =""
+build_and_process_dataframe("Beispielliste.csv")
+sentiment_analyse(extracted_df)
