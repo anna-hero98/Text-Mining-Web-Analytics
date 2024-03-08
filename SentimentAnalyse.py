@@ -50,3 +50,5 @@ def sentiment_analyse(extracted_df):
 extracted_df =""
 build_and_process_dataframe("Beispielliste.csv")
 sentiment_analyse(extracted_df)
+
+#PermissionError: [Errno 13] Permission denied: 'extracted_data.csv'
