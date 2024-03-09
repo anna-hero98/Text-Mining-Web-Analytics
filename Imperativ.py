@@ -1,4 +1,3 @@
-import requests
 import spacy
 import pandas as pd
 

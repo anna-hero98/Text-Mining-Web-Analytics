@@ -1,5 +1,4 @@
 import collections
-import requests
 import spacy
 from collections import Counter
 from wordcloud import WordCloud
