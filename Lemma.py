@@ -4,21 +4,14 @@ import spacy
 from collections import Counter
 from wordcloud import WordCloud
 import matplotlib. pyplot as plt
-
-nlp = spacy.load("de_core_news_sm")
-headers = {'Accept': 'application/json', 'Authorization': 'ApiKey rgsaY4U.oZRQKUHdJhF9qguHMkwCGIoLaqEcaHjYLF'}
-
 import pandas as pd
-import spacy
-from collections import Counter
 
 # Laden des deutschen Sprachmodells von Spacy
 nlp = spacy.load('de_core_news_sm')
-nlp.max_length = 49027203
+nlp.max_length = 5000000
 
 # Laden der CSV-Datei
-data = pd.read_csv("extracted_data.csv").head(n=300).dropna()
-
+data = pd.read_csv("extracted_data.csv").head(n=600).dropna()
 
 # Alle Texte aus der Spalte "Text" zu einem einzigen Text zusammenführen
 text = " ".join(data['Text'])
