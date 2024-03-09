@@ -65,7 +65,6 @@ def build_and_process_dataframe():
                     # Add newline character after each sentence
                     result_new = '\n'.join(sentences)
 
-
                     ende = "):"
                     rede = ""
 
