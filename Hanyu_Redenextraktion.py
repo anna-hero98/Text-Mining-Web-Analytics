@@ -5,12 +5,13 @@ import subprocess
 
 def build_and_process_dataframe():
 
-    # parteien = {"(CDU/CSU):","(DIE LINKE):","(BÜNDNIS 90/DIE GRÜNEN):", "(SPD):", "(FDP):", "(AfD):"}
     filepath = 'input_df.csv'
     df = pd.read_csv(filepath, sep=';')
     #Zeilenumbrüche bei Titel rausfiltern
     df.replace('\n', '', regex=True, inplace=True)
     extracted_df = pd.DataFrame(columns=['Jahr', 'Dokumentnr', 'Name', 'Partei', 'Thema', 'Titel', 'Text'])
+
+    bsp_df = pd.DataFrame(columns=['Jahr', 'Dokumentnr', 'Name', 'Partei', 'Thema', 'Titel', 'Text'])
 
     for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokumentnr'], df['Name'], df['Partei'],
                                                             df['Thema'], df['Titel']):
@@ -26,29 +27,33 @@ def build_and_process_dataframe():
             if 'documents' in json_data:
                 for document in json_data['documents']:
                     text = document['text']
+
                     # Ersetzt ' – ' mit ' - '
                     text = re.sub(r'–', '-', text)
                     # Entfernt Bindestrich nachdem ein Zeilenumbruch kommt
-                    text = re.sub(r'-\n\s*', '-', text)
+                    #text = re.sub(r'-\n\s*', '-', text)
                     # Entfernt Zeilenumbrüche und nicht-sichtbare Leerzeichen
                     text = re.sub(r'\s+', ' ', text.replace('\n', ' ')).strip()
+
+                    suche ="Flexibilisierung des Übergangs vom Erwerbsleben in den Ruhestand und zur Stärkung von Prävention und Rehabilitation"
+                    if suche in text:
+                        print("gefunden")
+
 
                     # Gesuchte Wortreihenfolge und Text nachfolgend bis zu einer anderen Wortfolge
                     search_sentence = titel
 
                     # Split the sentence into words
                     words = search_sentence.split()
-                    # Extract the first two words and the last word
-                    shortened_title = " ".join(words[2:-1])
-                    print(shortened_title)
 
-                    # Shorten the last word by 10 letters
-                    if len(words[-1]) > 10:
-                        shortened_last_word = words[-1][:-10]
-                        shortened_title += " " + shortened_last_word
-                    else:
-                        # If the last word is already shorter than 10 letters, keep it unchanged
-                        shortened_title += " " + words[-1]
+                    # Initialize shortened_title with the original search_sentence
+                    shortened_title = search_sentence
+
+                    if len(words) > 3:
+                        # Extract the first two words and the last word
+                        shortened_title = " ".join(words[2:-3])
+                        print(shortened_title)
+
 
                     # Suchen nach dem zweiten Vorkommen des Titels
                     titel_index = text.find(shortened_title, text.find(shortened_title) + 1)
@@ -76,7 +81,7 @@ def build_and_process_dataframe():
 
                     elif start != result_new:
                         print("Name + Zusatz + Partei")
-                        start = f"{name} \(.+\) \({partei}\):"  # Findet z.B. Hartwig Fischer (Göttingen) (CDU/CSU):
+                        start = "Egon Jüttner" #f"{name} \(.+\) \({partei}\):"  # Findet z.B. Hartwig Fischer (Göttingen) (CDU/CSU):
 
                         regex_match = re.compile(start)
                         match = re.findall((regex_match), result_new)
@@ -89,6 +94,7 @@ def build_and_process_dataframe():
                         print("Name")
                         start = f"{name}.*:"
 
+
                         regex_match = re.compile(start)
                         match = re.findall((regex_match), result_new)
                         newstart = "".join(match)  # re.findall Ergebnis -> Liste, diese in string umwandeln
@@ -99,10 +105,11 @@ def build_and_process_dataframe():
 
 
 
-                    end_position = result.find(ende, start_index)
+
+                    end_position = result_new.find(ende, start_index)
                     if ende != -1:
-                        rede = result[start_index:end_position].strip()
-                        # print(rede)
+                        rede = result_new[start_index:end_position].strip()
+                        rede = rede.replace(';', r'')  #Nimmt Semikolon raus, damit es nicht zu Konflikten mit dem sep=";" kommt
                         break
 
             extracted_df = extracted_df._append(
@@ -112,7 +119,7 @@ def build_and_process_dataframe():
         else:
             print("Error fetching data for dokumentnr:", dokumentnr)
     print(extracted_df)
-    extracted_df.to_csv('extracted_data.csv', index=False)
+    extracted_df.to_csv('extracted_data.csv', sep = "*", index=False)
 
     csv_file = 'extracted_data.csv'
 
