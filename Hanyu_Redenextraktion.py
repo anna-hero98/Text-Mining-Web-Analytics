@@ -5,7 +5,7 @@ import subprocess
 
 def build_and_process_dataframe():
 
-    filepath = 'input_df.csv'
+    filepath = 'testliste.csv'
     df = pd.read_csv(filepath, sep=';')
     #Zeilenumbrüche bei Titel rausfiltern
     df.replace('\n', '', regex=True, inplace=True)
@@ -27,17 +27,13 @@ def build_and_process_dataframe():
             if 'documents' in json_data:
                 for document in json_data['documents']:
                     text = document['text']
-
                     # Ersetzt ' – ' mit ' - '
                     text = re.sub(r'–', '-', text)
-                    # Entfernt Bindestrich nachdem ein Zeilenumbruch kommt
-                    #text = re.sub(r'-\n\s*', '-', text)
                     # Entfernt Zeilenumbrüche und nicht-sichtbare Leerzeichen
                     text = re.sub(r'\s+', ' ', text.replace('\n', ' ')).strip()
+                    # Entfernt Leerzeichen, das nach Bindestrich kommt kommt
+                    text = re.sub(r'\w-\s*', '-', text)
 
-                    suche ="Flexibilisierung des Übergangs vom Erwerbsleben in den Ruhestand und zur Stärkung von Prävention und Rehabilitation"
-                    if suche in text:
-                        print("gefunden")
 
 
                     # Gesuchte Wortreihenfolge und Text nachfolgend bis zu einer anderen Wortfolge
@@ -48,12 +44,17 @@ def build_and_process_dataframe():
 
                     # Initialize shortened_title with the original search_sentence
                     shortened_title = search_sentence
+                    print(shortened_title)
 
-                    if len(words) > 3:
-                        # Extract the first two words and the last word
-                        shortened_title = " ".join(words[2:-3])
+                    if len(words) > 6:
+                        # Extract the first two words and the last 3 word
+                        shortened_title = " ".join(words[2:-2])
                         print(shortened_title)
 
+                    if shortened_title in text:
+                        print("Titel gefunden")
+                    else:
+                        print("Titel nicht gefunden")
 
                     # Suchen nach dem zweiten Vorkommen des Titels
                     titel_index = text.find(shortened_title, text.find(shortened_title) + 1)
@@ -80,7 +81,7 @@ def build_and_process_dataframe():
 
                     elif start != result_new:
                         print("Name + Zusatz + Partei")
-                        start = "Egon Jüttner" #f"{name} \(.+\) \({partei}\):"  # Findet z.B. Hartwig Fischer (Göttingen) (CDU/CSU):
+                        start = f"{name} \(.+\) \({partei}\):"  # Findet z.B. Hartwig Fischer (Göttingen) (CDU/CSU):
 
                         regex_match = re.compile(start)
                         match = re.findall((regex_match), result_new)
