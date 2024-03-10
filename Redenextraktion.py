@@ -3,7 +3,7 @@ import pandas as pd
 import re
 import subprocess
 
-filepath = 'testliste.csv'
+filepath = 'input_df.csv'
 df = pd.read_csv(filepath, sep=';')
 #Zeilenumbrüche bei Titel rausfiltern
 df.replace('\n', '', regex=True, inplace=True)
@@ -30,7 +30,7 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
                 # Entfernt Zeilenumbrüche und nicht-sichtbare Leerzeichen
                 text = re.sub(r'\s+', ' ', text.replace('\n', ' ')).strip()
                 # Entfernt Leerzeichen, das nach Bindestrich kommt kommt
-                text = re.sub(r'\w-\s*', '-', text)
+                #text = re.sub(r'-\s', '-', text)
 
                 # Gesuchte Wortreihenfolge und Text nachfolgend bis zu einer anderen Wortfolge
                 search_sentence = titel
@@ -42,15 +42,11 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
                 shortened_title = search_sentence
                 print(shortened_title)
 
-                if len(words) > 6:
+                if len(words) > 2:
                     # Extract the first two words and the last 3 word
-                    shortened_title = " ".join(words[2:-2])
+                    shortened_title = " ".join(words[2:-1])
                     print(shortened_title)
 
-                if shortened_title in text:
-                    print("Titel gefunden")
-                else:
-                    print("Titel nicht gefunden")
 
                 # Suchen nach dem zweiten Vorkommen des Titels
                 titel_index = text.find(shortened_title, text.find(shortened_title) + 1)
@@ -78,11 +74,11 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
                 elif start != result_new:
                     print("Name + Zusatz + Partei")
                     start = f"{name} \(.+\) \({partei}\):"  # Findet z.B. Hartwig Fischer (Göttingen) (CDU/CSU):
+                    print(start)
 
                     regex_match = re.compile(start)
                     match = re.findall((regex_match), result_new)
                     newstart = "".join(match)  # re.findall Ergebnis -> Liste, diese in string umwandeln
-                    print(newstart)
 
                     start_index = result_new.find(newstart, result_new.find(newstart))
                     start_index += len(newstart)
