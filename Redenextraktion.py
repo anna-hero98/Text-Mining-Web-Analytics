@@ -1,106 +1,120 @@
 import requests
-import spacy
+import pandas as pd
+import re
+import subprocess
 
-# Laden des SpaCy-Modells für die deutsche Sprache
-nlp = spacy.load("de_core_news_sm")
+filepath = 'testliste.csv'
+df = pd.read_csv(filepath, sep=';')
+#Zeilenumbrüche bei Titel rausfiltern
+df.replace('\n', '', regex=True, inplace=True)
+extracted_df = pd.DataFrame(columns=['Jahr', 'Dokumentnr', 'Name', 'Partei', 'Thema', 'Titel', 'Text'])
 
-# API-Anfrage
-headers = {'Accept': 'application/json', 'Authorization': 'ApiKey rgsaY4U.oZRQKUHdJhF9qguHMkwCGIoLaqEcaHjYLF'}
-Dokumentnr = input('Bitte Dokumentnummer eingeben: ')
-url = f'https://search.dip.bundestag.de/api/v1/plenarprotokoll-text?f.dokumentnummer={Dokumentnr}'
-response = requests.get(url, headers=headers)
-json_data = response.json()
+bsp_df = pd.DataFrame(columns=['Jahr', 'Dokumentnr', 'Name', 'Partei', 'Thema', 'Titel', 'Text'])
 
-# Check if 'documents' key exists in json_data
-if 'documents' in json_data:
-    # Iterate over each document
-    for document in json_data['documents']:
-        # Access the 'text' field for each document
-        text = document['text']
-else:
-    print("No documents found.")
+for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokumentnr'], df['Name'], df['Partei'],
+                                                            df['Thema'], df['Titel']):
+    print("Fetching data for dokumentnr:", dokumentnr)
 
-# Analyse des Textes mit SpaCy
-doc = nlp(text)
+    # API
+    url = f'https://search.dip.bundestag.de/api/v1/plenarprotokoll-text?f.dokumentnummer={dokumentnr}'
+    headers = {'Accept': 'application/json', 'Authorization': 'ApiKey rgsaY4U.oZRQKUHdJhF9qguHMkwCGIoLaqEcaHjYLF'}
+    response = requests.get(url, headers=headers)
 
-# Gesuchte Wortreihenfolge und Text nachfolgend bis zu einer anderen Wortfolge
-search_sentence = "Dritten Gesetzes zur Änderung des Aufstiegsfortbildungsförderungsgesetzes"
-start = "Feist (CDU/CSU):"
-parteien = ["(CDU/CSU):","(DIE LINKE):","(BÜNDNIS 90/DIE GRÜNEN):", "(SPD):", "(FDP):", "(AfD):"]
+    if response.status_code == 200:
+        json_data = response.json()
+        if 'documents' in json_data:
+            for document in json_data['documents']:
+                text = document['text']
+                # Ersetzt ' – ' mit ' - '
+                text = re.sub(r'–', '-', text)
+                # Entfernt Zeilenumbrüche und nicht-sichtbare Leerzeichen
+                text = re.sub(r'\s+', ' ', text.replace('\n', ' ')).strip()
+                # Entfernt Leerzeichen, das nach Bindestrich kommt kommt
+                text = re.sub(r'\w-\s*', '-', text)
 
-count_search_sentence = 0
-count_partei = 0
+                # Gesuchte Wortreihenfolge und Text nachfolgend bis zu einer anderen Wortfolge
+                search_sentence = titel
 
-# Finden der Startposition der gesuchten Wortreihenfolge
-for sent in doc.sents:
-    if search_sentence in sent.text:
-        count_search_sentence += 1
-        if count_search_sentence == 2:
-            # Finden der Startposition der gesuchten Wortreihenfolge
-            start_position = text.find(start)
-            # -1 ist ein spezieller Wert für "nicht gefunden" oder "nicht vorhanden"
-            if start_position != -1:
-                # Wenn die gesuchte Wortreihenfolge gefunden wurde, dann Abgleich mit Parteien Liste
-                for partei in parteien:
-                    count_partei += 1
-                    if count_partei == 2:
-                        end_position = text.find(partei, start_position)
-                        if end_position != -1:
-                            # Wenn die nachfolgende Wortfolge gefunden wurde
-                            desired_text = text[start_position:end_position]
-                            print(desired_text)
-                            break
+                # Split the sentence into words
+                words = search_sentence.split()
+
+                # Initialize shortened_title with the original search_sentence
+                shortened_title = search_sentence
+                print(shortened_title)
+
+                if len(words) > 6:
+                    # Extract the first two words and the last 3 word
+                    shortened_title = " ".join(words[2:-2])
+                    print(shortened_title)
+
+                if shortened_title in text:
+                    print("Titel gefunden")
                 else:
-                    # Wenn die nachfolgende Wortfolge nicht gefunden wurde
-                    print("Die nachfolgende Wortfolge wurde nicht gefunden.")
-            else:
-                # Wenn die gesuchte Wortreihenfolge nicht gefunden wurde
-                print("Die gesuchte Wortreihenfolge wurde nicht gefunden.")
+                    print("Titel nicht gefunden")
 
+                # Suchen nach dem zweiten Vorkommen des Titels
+                titel_index = text.find(shortened_title, text.find(shortened_title) + 1)
+                # Extrahieren des Teils nach dem zweiten Vorkommen des Titels
+                result = text[titel_index:].strip()
+                # result in Sätze mithilfe von re aufteilen, (?=[A-Z]+\. -> Außname für Mr. Dr. M. etc.
+                sentences = re.split(r'(?<=[.!?])\s+(?=[A-Z]+\. )', result)
 
+                # Add newline character after each sentence
+                result_new = '\n'.join(sentences)
 
-"""
-# Check if 'documents' key exists in json_data
-if 'documents' in json_data:
-    # Iterate over each document
-    for document in json_data['documents']:
-        # Access the 'text' field for each document
-        text = document['text']
-        print(text)
-else:
-    print("No documents found.")
+                ende = "):"
+                rede = ""
 
-doc = nlp(text)
+                start = f"{name} ({partei}):"
 
-Parteien = ["(CDU/CSU):","(DIE LINKE):","(BÜNDNIS 90/DIE GRÜNEN):", "(SPD):", "(FDP):", "(AfD):"]
+                if start in result_new:
+                    print("Name + Partei")
+                    start = f"{name} ({partei}):"
+                    print(start)
 
-# Gesuchte Wortreihenfolge und Text nachfolgend bis zu einer anderen Wortfolge
-search_sentence = "Dritten Gesetzes zur Änderung des Aufstiegsfortbildungsförderungsgesetzes"
-Anfang = "Feist (CDU/CSU):"
-following_sequence = "(DIE LINKE):"
+                    start_index = result_new.find(start, result_new.find(start))
+                    start_index += len(start)
 
-count_search_sentence = 0
+                elif start != result_new:
+                    print("Name + Zusatz + Partei")
+                    start = f"{name} \(.+\) \({partei}\):"  # Findet z.B. Hartwig Fischer (Göttingen) (CDU/CSU):
 
-# Finden der Startposition der gesuchten Wortreihenfolge
-for sent in doc.sents:
-    if search_sentence in sent.text:
-        count_search_sentence += 1
-        if count_search_sentence == 2:
-            # Finden der Startposition der gesuchten Wortreihenfolge
-            start_position = text.find(Anfang)
-            # -1 ist ein spezieller Wert für "nicht gefunden" oder "nicht vorhanden"
-            if start_position != -1:
-                # Wenn die gesuchte Wortreihenfolge gefunden wurde
-                end_position = text.find(following_sequence, start_position)
-                if end_position != -1:
-                    # Wenn die nachfolgende Wortfolge gefunden wurde
-                    desired_text = text[start_position:end_position]
-                    print(desired_text)
+                    regex_match = re.compile(start)
+                    match = re.findall((regex_match), result_new)
+                    newstart = "".join(match)  # re.findall Ergebnis -> Liste, diese in string umwandeln
+                    print(newstart)
+
+                    start_index = result_new.find(newstart, result_new.find(newstart))
+                    start_index += len(newstart)
                 else:
-                    # Wenn die nachfolgende Wortfolge nicht gefunden wurde
-                    print("Die nachfolgende Wortfolge wurde nicht gefunden.")
-            else:
-                # Wenn die gesuchte Wortreihenfolge nicht gefunden wurde
-                print("Die gesuchte Wortreihenfolge wurde nicht gefunden.")
+                    print("Name")
+                    start = f"{name}.*:"
 
-"""
+                    regex_match = re.compile(start)
+                    match = re.findall((regex_match), result_new)
+                    newstart = "".join(match)  # re.findall Ergebnis -> Liste, diese in string umwandeln
+                    print(newstart)
+
+                    start_index = result_new.find(start, result_new.find(start))
+                    start_index += len(newstart)
+
+                end_position = result_new.find(ende, start_index)
+                if ende != -1:
+                    rede = result_new[start_index:end_position].strip()
+                    rede = rede.replace(';', r'')  #Nimmt Semikolon raus, damit es nicht zu Konflikten mit dem sep=";" kommt
+                    break
+
+        extracted_df = extracted_df._append(
+                     {'Jahr': jahr, 'Dokumentnr': dokumentnr, 'Name': name, 'Partei': partei, 'Thema': thema,
+                        'Titel': titel, 'Text': rede}, ignore_index=True)
+
+    else:
+        print("Error fetching data for dokumentnr:", dokumentnr)
+print(extracted_df)
+extracted_df.to_csv('extracted_data.csv', sep = "*", index=False)
+
+csv_file = 'extracted_data.csv'
+
+# Öffne die CSV-Datei im Standardprogramm des Betriebssystems
+subprocess.Popen(['start', csv_file], shell=True)
+
