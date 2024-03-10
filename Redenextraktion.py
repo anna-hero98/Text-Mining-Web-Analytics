@@ -105,7 +105,7 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
                     break
 
         extracted_df = extracted_df._append(
-                    {'Jahr': jahr, 'Dokumentnr': dokumentnr, 'Name': name, 'Partei': partei, 'Thema': thema,
+                     {'Jahr': jahr, 'Dokumentnr': dokumentnr, 'Name': name, 'Partei': partei, 'Thema': thema,
                         'Titel': titel, 'Text': rede}, ignore_index=True)
 
     else:
