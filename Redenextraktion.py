@@ -3,7 +3,7 @@ import pandas as pd
 import re
 import subprocess
 
-filepath = 'input_df.csv'
+filepath = 'input_df_new_version.csv'
 df = pd.read_csv(filepath, sep=';')
 #Zeilenumbrüche bei Titel rausfiltern
 df.replace('\n', '', regex=True, inplace=True)
@@ -107,7 +107,7 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
     else:
         print("Error fetching data for dokumentnr:", dokumentnr)
 print(extracted_df)
-extracted_df.to_csv('extracted_data.csv', sep = "*", index=False)
+extracted_df.to_csv('extracted_data.csv', sep = ";", index=False)
 
 csv_file = 'extracted_data.csv'
 
