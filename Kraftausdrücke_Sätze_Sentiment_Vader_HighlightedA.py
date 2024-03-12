@@ -10,7 +10,7 @@ nlp = spacy.load("de_core_news_sm")
 nlp.max_length = 5000000
 
 # Laden der CSV-Datei
-data = pd.read_csv("extracted_data.csv").head(n=600).dropna()
+data = pd.read_csv("extracted_data.csv",sep=';').head(n=10).dropna()
 
 
 # Alle Texte aus der Spalte "Text" zu einem einzigen Text zusammenführen
@@ -42,17 +42,18 @@ with open("Kraftausdruecke.csv") as kraftausdruecke_file: #With Block schließt 
             if word in sentence.text:
                 # Hervorheben des Kraftausdrucks
                 highlighted_sentence = sentence.text.replace(word, f"**{word}**") #Wenn Karftausdruck im Text wird das Wort durch **word** ersetzt um es hervorzuheben
-                return highlighted_sentence #modifizierter Satz wird zurückgegeben
-        return sentence.text #Wenn kein Kraftausdruck vorhanden, wird ursprünglicher Satz zurückgegeben
+                return highlighted_sentence, word #modifizierter Satz wird zurückgegeben
+        return sentence.text, "null" #Wenn kein Kraftausdruck vorhanden, wird ursprünglicher Satz zurückgegeben
 
     # Durchführen der Sentimentanalyse für Sätze mit Kraftausdrücken
     for sentence in sentences:
-        highlighted_sentence = highlight_bad_words(sentence, kraftausdruecke)
+        highlighted_sentence, word = highlight_bad_words(sentence, kraftausdruecke)
         if highlighted_sentence != sentence.text: #überprüft, ob der higl. Satz sich vom ursprünglich Satz unterscheidet --> Wenn Unterscheidung, dann liegt ein Kraftausdruck vor
             sentiment_scores = sia.polarity_scores(highlighted_sentence) #Wenn Kraftausdruck vorliegt, wird eine Sentiemntanaylse durchgeführt
             # sia ist ein Sentiment Intensity Analyzer Tool, das die Polarität des Sentiments (positiv, neutral, negativ) und die Intensität des Sentiments im Satz berechnet
             print(f"Satz: {highlighted_sentence}")
             print(f"Sentiment-Scores: {sentiment_scores}")
+            print(f"Wort:{word}")
             #druckt die Sentiment-Scores --> Werte für die positiven, neutralen und negativen Aspekte des Sentiments sowie einen Gesamtwert
     else:
         print("Keine Dokumente gefunden.")
