@@ -29,6 +29,6 @@ for idx, (jahr, partei, thema, text) in enumerate(zip(data['Jahr'], data['Partei
             sentences = re.split(r'(?<=[.!?])\s+(?=[A-Z]+\. )', text)
             print(f"{kraftausdruck} gefunden in Zeile: {idx}\n Jahr: {jahr} Partei: {partei}  Thema: {thema}\n")
             anzahl_treffer += 1
-            text
+            text =
 
 print(anzahl_treffer)
