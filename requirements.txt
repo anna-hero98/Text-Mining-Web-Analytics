@@ -1,18 +1,13 @@
-numpy==1.26.3
-pandas==2.2.0
-python-dateutil==2.8.2 #von wo kommt das?
-pytz==2023.4 #same?
-six==1.16.0 #same?
-tzdata==2023.4 #same?
-requests~=2.31.0
-spacy~=3.7.4
 match~=0.3.2 #same?
 matplotlib~=3.8.3
 nltk~=3.8.1
+numpy==1.26.3
+pandas==2.2.0
+regex==2023.12.25
+requests~=2.31.0
+spacy~=3.7.4
 wordcloud~=1.9.3
 
+
 #from Zwischenrufe counter?
-#from Redenextraktion re?
-#from Redenextraktion subprozess?
-#from Kraftausdrücke csv?
 #from Lemma: collections import Counter
