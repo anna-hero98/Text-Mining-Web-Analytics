@@ -5,15 +5,14 @@ import subprocess
 
 filepath = 'input_df_new_version.csv'
 df = pd.read_csv(filepath, sep=';')
-#Zeilenumbrüche bei Titel rausfiltern
 df.replace('\n', '', regex=True, inplace=True)
 extracted_df = pd.DataFrame(columns=['Jahr', 'Dokumentnr', 'Name', 'Partei', 'Thema', 'Titel', 'Text'])
 
-bsp_df = pd.DataFrame(columns=['Jahr', 'Dokumentnr', 'Name', 'Partei', 'Thema', 'Titel', 'Text'])
+rede = ""
 
+# Pro Zeile in Input_Df Rede auslesen
 for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokumentnr'], df['Name'], df['Partei'],
                                                             df['Thema'], df['Titel']):
-    print("Fetching data for dokumentnr:", dokumentnr)
 
     # API
     url = f'https://search.dip.bundestag.de/api/v1/plenarprotokoll-text?f.dokumentnummer={dokumentnr}'
@@ -25,79 +24,58 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
         if 'documents' in json_data:
             for document in json_data['documents']:
                 text = document['text']
-                # Ersetzt ' – ' mit ' - '
+                # Mithilfe von Regex Text cleanen
                 text = re.sub(r'–', '-', text)
-                # Entfernt Zeilenumbrüche und nicht-sichtbare Leerzeichen
                 text = re.sub(r'\s+', ' ', text.replace('\n', ' ')).strip()
-                # Entfernt Leerzeichen, das nach Bindestrich kommt kommt
-                #text = re.sub(r'-\s', '-', text)
 
-                # Gesuchte Wortreihenfolge und Text nachfolgend bis zu einer anderen Wortfolge
                 search_sentence = titel
-
-                # Split the sentence into words
                 words = search_sentence.split()
-
-                # Initialize shortened_title with the original search_sentence
                 shortened_title = search_sentence
-                print(shortened_title)
 
                 if len(words) > 2:
-                    # Extract the first two words and the last 3 word
                     shortened_title = " ".join(words[2:-1])
-                    print(shortened_title)
 
-
-                # Suchen nach dem zweiten Vorkommen des Titels
+                # Sucht nach dem zweiten Vorkommen des Titels
                 titel_index = text.find(shortened_title, text.find(shortened_title) + 1)
-                # Extrahieren des Teils nach dem zweiten Vorkommen des Titels
+                # Extrahiert Text nach dem zweiten Vorkommen des Titels
                 result = text[titel_index:].strip()
-                # result in Sätze mithilfe von re aufteilen, (?=[A-Z]+\. -> Außname für Mr. Dr. M. etc.
+                # result in Sätze mithilfe von Regex aufteilen, (?=[A-Z]+\. -> Außname für Mr. Dr. M. etc.
                 sentences = re.split(r'(?<=[.!?])\s+(?=[A-Z]+\. )', result)
 
-                # Add newline character after each sentence
+                # Um später den Text zeilenweise einzulesen
                 result_new = '\n'.join(sentences)
 
-                ende = "):"
-                rede = ""
-
                 start = f"{name} ({partei}):"
+                end = "):"
 
                 if start in result_new:
-                    print("Name + Partei")
                     start = f"{name} ({partei}):"
-                    print(start)
 
                     start_index = result_new.find(start, result_new.find(start))
                     start_index += len(start)
 
                 elif start != result_new:
-                    print("Name + Zusatz + Partei")
                     start = f"{name} \(.+\) \({partei}\):"  # Findet z.B. Hartwig Fischer (Göttingen) (CDU/CSU):
-                    print(start)
-
                     regex_match = re.compile(start)
                     match = re.findall((regex_match), result_new)
-                    newstart = "".join(match)  # re.findall Ergebnis -> Liste, diese in string umwandeln
+                    newstart = "".join(match)  # match -> Liste, diese in string umwandeln
 
                     start_index = result_new.find(newstart, result_new.find(newstart))
                     start_index += len(newstart)
-                else:
-                    print("Name")
-                    start = f"{name}.*:"
 
+                else:
+                    start = f"{name}.*:"
                     regex_match = re.compile(start)
                     match = re.findall((regex_match), result_new)
-                    newstart = "".join(match)  # re.findall Ergebnis -> Liste, diese in string umwandeln
-                    print(newstart)
+                    newstart = "".join(match)  # match -> Liste, diese in string umwandeln
 
                     start_index = result_new.find(start, result_new.find(start))
                     start_index += len(newstart)
 
-                end_position = result_new.find(ende, start_index)
-                if ende != -1:
+                end_position = result_new.find(end, start_index)
+                if end != -1:
                     rede = result_new[start_index:end_position].strip()
-                    rede = rede.replace(';', r'')  #Nimmt Semikolon raus, damit es nicht zu Konflikten mit dem sep=";" kommt
+                    rede = rede.replace(';', r'')  # Nimmt Semikolon raus, damit es nicht zu Konflikten mit dem sep=";" kommt
                     break
 
         extracted_df = extracted_df._append(
@@ -106,11 +84,10 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(df['Jahr'], df['Dokument
 
     else:
         print("Error fetching data for dokumentnr:", dokumentnr)
-print(extracted_df)
 extracted_df.to_csv('extracted_data.csv', sep = ";", index=False)
 
 csv_file = 'extracted_data.csv'
 
-# Öffne die CSV-Datei im Standardprogramm des Betriebssystems
+# Öffnet die CSV-Datei im Betriebssystems
 subprocess.Popen(['start', csv_file], shell=True)
 
