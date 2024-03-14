@@ -11,7 +11,7 @@ nlp = spacy.load('de_core_news_sm')
 data = pd.read_csv("extracted_data_new_version.csv", sep=";")
 
 # Filtern der Daten für Jahre kleiner als 2016
-filtered_data = data[data['Jahr'] > 2017]
+filtered_data = data[data['Jahr'] < 2017]
 
 # Initialisierung der Zähler für Wortarten pro Partei
 counter_per_party_word_type = {}
