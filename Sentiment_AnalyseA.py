@@ -3,9 +3,8 @@ import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
 # Laden der CSV-Datei
-data = pd.read_csv("extracted_data.csv").head(n=600).dropna()
+data = pd.read_csv("extracted_data_new_version.csv", sep=';')
 
-print(data)
 
 # Sentiment Analyse
 
@@ -29,7 +28,7 @@ print(Sentimentlexikon)
 list_Sentimentwords = []
 for index, row in data.iterrows():
     for einzelnes_wort in Sentimentlexikon['Synonym']:
-        if einzelnes_wort in row['Text']:
+        if isinstance(row['Text'], str) and einzelnes_wort in row['Text']:
             sentences = row['Text'].split('.')  # Annahme: Sätze werden durch Punkte getrennt
             sentence_with_word = next((s for s in sentences if einzelnes_wort in s), None)
             Cluster = Sentimentlexikon.loc[Sentimentlexikon['Synonym'] == einzelnes_wort, 'Wort'].values[0]
