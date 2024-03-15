@@ -108,9 +108,9 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(input_df['Jahr'], input_
         print("Error fetching data for dokumentnr:", dokumentnr)
 
 #Der extrahierte DF wird als CSV gespeichert
-extracted_df.to_csv('extracted_data.csv', sep=";", index=False)
+extracted_df.to_csv('extracted_data_new_version.csv', sep=";", index=False)
 
-csv_file = 'extracted_data.csv'
+csv_file = 'extracted_data_new_version.csv'
 
 # Öffnet die CSV-Datei im Betriebssystems
 subprocess.Popen(['start', csv_file], shell=True)

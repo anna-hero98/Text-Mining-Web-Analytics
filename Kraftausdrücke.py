@@ -1,5 +1,5 @@
-import spacy
 import nltk
+import spacy
 import pandas as pd
 nltk.download('vader_lexicon')
 from nltk.sentiment import SentimentIntensityAnalyzer
@@ -75,7 +75,7 @@ def wordcloud_create(result, time, years):
 
     plt.figure(figsize=(10, 5))
     plt.imshow(wordcloud, interpolation='bilinear')
-    plt.title(f'WordCloud der Kraftausdrücke {time} Eintritt der AfD ({years})')
+    plt.title(f'WordCloud der Kraftausdrücke der CDU/CSU und LINKEN {time} Eintritt der AfD ({years})')
     plt.axis('off')
     return(plt.show())
 
@@ -97,8 +97,8 @@ amount_after_LINKE, compound_after_LINKE =analyze_compound_sentiment(filtered_da
 # Tabellen erstellen vorher
 data1 = [
     ['', 'CDU/CSU', 'DIE LINKE'],
-    ['Amount Before', amount_before_CDUCSU, amount_before_LINKE],
-    ['Compound Before', compound_before_CDUCSU, compound_before_LINKE]
+    ['Menge zuvor', amount_before_CDUCSU, amount_before_LINKE],
+    ['Compound zuvor', compound_before_CDUCSU, compound_before_LINKE]
 ]
 colWidths = [0.15, 0.1, 0.1]
 plt.figure(figsize=(10, 5))
@@ -110,8 +110,8 @@ plt.show()
 # Tabellen erstellen nachher
 data2 = [
     ['', 'CDU/CSU', 'DIE LINKE'],
-    ['Amount Before', amount_after_CDUCSU, amount_after_LINKE],
-    ['Compound Before', compound_after_CDUCSU, compound_after_LINKE]
+    ['Menge danach', amount_after_CDUCSU, amount_after_LINKE],
+    ['Compound danach', compound_after_CDUCSU, compound_after_LINKE]
 ]
 plt.figure(figsize=(10, 5))
 plt.table(cellText=data2, loc='center',colWidths=colWidths)
