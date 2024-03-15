@@ -19,6 +19,8 @@ Außerdem sollte mittels "python -m spacy download de_core_news_sm" das Paket in
 
 **Benutzte Bibliotheken:**
 
+counter ~= 3.9
+
 match~=0.3.2
 
 matplotlib~=3.8.3
@@ -35,8 +37,8 @@ requests~=2.31.0
 
 spacy~=3.7.4
 
-wordcloud~=1.9.3
-
 VaderSentiment~= 3.3.2
 
-counter ~= 3.9
+wordcloud~=1.9.3
+
+
