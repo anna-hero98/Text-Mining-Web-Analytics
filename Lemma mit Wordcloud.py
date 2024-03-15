@@ -1,3 +1,5 @@
+# Dieses Skript zeigt die Häufigkeit der Lemmata von CDU/CSU und Linken auf im Zeitraum vor und nach 2017. Die Visualisierung wird über eine Wordcloud gemacht. 
+
 import pandas as pd
 import collections
 import spacy
