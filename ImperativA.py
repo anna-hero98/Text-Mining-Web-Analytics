@@ -1,47 +1,62 @@
-import spacy
+
 import pandas as pd
+import spacy
+import matplotlib.pyplot as plt
+from zipfile import ZipFile
 
-from collections import Counter
-# Laden des deutschen Sprachmodells
-nlp = spacy.load("de_core_news_sm")
-#Erhöhung Anzahl an Zeichen
-nlp.max_length = 5000000
-# Laden der CSV-Datei
-data = pd.read_csv("extracted_data.csv").head(n=600).dropna()
+# Laden des deutschen Sprachmodells von Spacy
+nlp = spacy.load('de_core_news_sm')
 
+# Laden der CSV-Datei "extracted_data_new_version.csv"
+data = pd.read_csv("extracted_data_new_version.csv", sep=";")
 
-# Alle Texte aus der Spalte "Text" zu einem einzigen Text zusammenführen
-#oder weitere Bedingungen einfügen
-text = " ".join(data['Text'])
+# Fehlende Werte entfernen und daraufhin Index zurücksetzen
+data = data.dropna().reset_index(drop=True)
 
-# spaCy-Verarbeitung
-doc = nlp(text)
+# Auf die Spalten "Text" und "Jahr" zugreifen
+text_column = data['Text']
+year_column = data['Jahr']
 
+# Liste für die Anzahl der Imperativsätze für jedes Jahr
+zähler_imperativ_jahr = {}
 
+# Iteration über jeden Text und das entsprechende Jahr
+for text, year in zip(text_column, year_column):
+    # 1. Text in Sätze und Tokens segmentieren
+    doc = nlp(text)
+    sentences = [sent.text.strip() for sent in doc.sents]
 
- # 1. Segmentierung des Textes in Sätze und Tokens
-doc = nlp(text)
-sentences = [sent.text.strip() for sent in doc.sents]
+    imperativ = []
 
-imperative_sentences = []
+    # 2. Anwenden des POS-Taggers und Identifizieren von Imperativsätzen
+    for sentence in sentences:
+        sentence_doc = nlp(sentence)
+        first_token_pos = sentence_doc[0].pos_
+        last_token_text = sentence_doc[-1].text
+        last_token_pos = sentence_doc[-1].pos_
 
-# 2. Anwenden des POS-Taggers und Identifizieren von Imperativsätzen
-for sentence in sentences:
-    sentence_doc = nlp(sentence)
-    first_token_pos = sentence_doc[0].pos_
-    last_token_text = sentence_doc[-1].text
-    last_token_pos = sentence_doc[-1].pos_
+        if (last_token_text.endswith('.') or last_token_text.endswith('!')) and first_token_pos == 'VERB':
+            imperativ.append(sentence)
 
-    if (last_token_text.endswith('.') or last_token_text.endswith('!')) and first_token_pos == 'VERB':
-        imperative_sentences.append(sentence)
+    # Anzahl der identifizierten Imperativsätze speichern
+    zähler_imperativ = len(imperativ)
 
-# 3. Ausgabe der identifizierten Imperativsätze
-if imperative_sentences:
-    print("Identifizierte Imperativsätze:")
-    for i, sentence in enumerate(imperative_sentences, 1):
-        print(f"{i}. {sentence}")
+    # Aggregieren der Anzahl der Imperativsätze pro Jahr
+    if year in zähler_imperativ_jahr:
+        zähler_imperativ_jahr[year] += zähler_imperativ
     else:
-        print("Keine Imperativsätze gefunden.")
+        zähler_imperativ_jahr[year] = zähler_imperativ
 
-else:
-    print("Keine Dokumente gefunden.")
+# Konvertieren der aggregierten Daten in einen DataFrame für Visualisierung
+imperativ_df = pd.DataFrame(list(zähler_imperativ_jahr.items()), columns=['Jahr', 'Anzahl_Imperativsätze'])
+
+# Tabelle anzeigen
+print(zähler_imperativ_jahr)
+
+# Visualisierung der Anzahl der Imperativsätze pro Jahr
+plt.bar(imperativ_df['Jahr'], imperativ_df['Anzahl_Imperativsätze'])
+plt.xlabel('Jahr')
+plt.ylabel('Anzahl der Imperativsätze')
+plt.title('Anzahl der Imperativsätze pro Jahr')
+plt.show()
+
