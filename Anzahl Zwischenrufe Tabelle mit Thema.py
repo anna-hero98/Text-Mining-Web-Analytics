@@ -1,4 +1,4 @@
-#Dieses Skript zählt die Zwischenrufe, die von der CDU/CSU und den Linken gemacht wurden. 
+#Dieses Skript zählt die Zwischenrufe, die von der CDU/CSU und den Linken für bestimmte Themen gemacht wurden. 
 #Die Zwischenrufe werden dabei jeweils für den Zeitraum vor und nach 2017 betrachtet. Weiterhin werden die Ergebnisse in einer Tabelle visualisiert.
 
 import pandas as pd
