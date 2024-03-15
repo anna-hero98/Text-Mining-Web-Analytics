@@ -4,7 +4,9 @@ Im folgenden Projekt werden Bundestagsreden eingelesen und auf sprachliche Auff�
 Dafür sollte zuerst Redenextraktion.py laufen gelassen werden.
 Danach können mit den übrigen Modulen die extrahierten Reden auf verschiedene sprachliche Auffälligkeiten analysiert.
 
+
 **Installationsanleitung:**
+
 Die Dateien aus der requirements.txt müssen installiert werden. 
 Außerdem sollte mittels "python -m spacy download de_core_news_sm" das Paket installiert werden, welches die deutsche Sprache analysiert.
 
@@ -12,6 +14,7 @@ Außerdem sollte mittels "python -m spacy download de_core_news_sm" das Paket in
 
 **Pythonversion:** 
 3.12.1
+
 
 **Benutzte Bibliotheken:**
 
