@@ -2,7 +2,7 @@
 
 Im folgenden Projekt werden Bundestagsreden eingelesen und auf sprachliche Auffälligkeiten analysiert, mit dem Ziel Reden der CDU/CSU und der Linken vor und nach Einzug der AFD in den Bundestag auf Unterschiede zu analysieren. 
 Dafür sollte zuerst Redenextraktion.py laufen gelassen werden.
-Danach können mit den übrigen Modulen die extrahierten Reden auf verschiedene sprachliche Auffälligkeiten analysiert.
+Danach können mit den übrigen Modulen die extrahierten Reden auf verschiedene sprachliche Auffälligkeiten analysiert werden.
 
 
 **Installationsanleitung:**

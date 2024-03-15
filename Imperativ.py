@@ -1,3 +1,4 @@
+# Dieses Skript zählt die Imperativsätze, die jährlich während der Reden gemacht wurden. Die Visualisierung wird über ein Balkendiagramm gemacht. 
 
 import pandas as pd
 import spacy

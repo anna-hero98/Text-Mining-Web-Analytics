@@ -1,3 +1,5 @@
+# Dieses Skript zählt die Superlative, die jährlich von CDU/CSU und Linken während der Reden gemacht wurden. Die Visualisierung wird über eine Tabelle gemacht. 
+
 import spacy
 from collections import Counter
 import pandas as pd
