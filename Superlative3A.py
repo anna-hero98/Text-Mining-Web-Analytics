@@ -1,34 +1,48 @@
-import requests
 import spacy
 from collections import Counter
 import pandas as pd
-
+from matplotlib import pyplot as plt
 
 # Laden des deutschen Sprachmodells von Spacy
 nlp = spacy.load('de_core_news_sm')
 nlp.max_length = 5000000
 
-# Laden der CSV-Datei
-data = pd.read_csv("extracted_data.csv").head(n=100).dropna()
-
-# Alle Texte aus der Spalte "Text" zu einem einzigen Text zusammenführen
-text = " ".join(data['Text'])
+# Laden der CSV-Datei "extracted_data_new_version.csv"
+data = pd.read_csv("extracted_data_new_version.csv", sep=";")
 
 # Verarbeitung des Textes mit spaCy
-doc = nlp(text)
+docs = [nlp(text) for text in data['Text']]
+jahre = data['Jahr']
+parteien = data['Partei']
 
-# Identifizieren und Zählen von Superlativen
-superlative_count = Counter()
-for token in doc: #geht jedes Token in dem durch eine NLP-Bibliothek vorverarbeiteten Dokument doc durch (Basis/Idee VL Slides)
-    if token.tag_ == "ADJA" and token.morph.get("Degree") == ["Sup"]:
-    #Überprüfung, ob das aktuelle Token ein adj. Superlativ ist.
-    #1. wird geprüft, ob der POS-Tag (Part-of-Speech Tag) des Tokens ADJA (ein Adjektiv )ist
-    #2. wird überprüft, ob das morphologische Merkmal Degree des Tokens den Wert Sup hat
-    # --> Bedeutet, dass das Adjektiv in der Superlativform vorliegt.
-        superlative_count[token.text] += 1
+# Identifizieren und Zählen von Superlativen pro Jahr und Partei
+zähler_superlative_jahr_partei = Counter()
+for doc, year, party in zip(docs, jahre, parteien):
+    zähler_superlative = Counter()
+    for token in doc:
+        if token.pos_ == "ADJ" and "Sup" in token.morph.get("Degree", []):
+            zähler_superlative[token.text] += 1
+    zähler_superlative_jahr_partei[(year, party)] += sum(zähler_superlative.values())
 
-# Ausgabe der Superlative und ihrer Häufigkeiten, absteigend sortiert
-print("Superlativ - Häufigkeit")
-for superlativ, haeufigkeit in superlative_count.most_common():
-    print(f"{superlativ} - {haeufigkeit}")
+# Konvertieren der aggregierten Daten in einen DataFrame
+superlative_jahr_partei_df = pd.DataFrame(list(zähler_superlative_jahr_partei.items()), columns=['Jahr_Partei', 'Häufigkeit_Superlative'])
 
+# Aufteilen der kombinierten Spalte 'Jahr_Partei' in separate Spalten in Jahr und Partei
+superlative_jahr_partei_df[['Jahr', 'Partei']] = pd.DataFrame(superlative_jahr_partei_df['Jahr_Partei'].tolist(), index=superlative_jahr_partei_df.index)
+
+# Tabelle anzeigen
+print(superlative_jahr_partei_df)
+
+# Daten für die Tabelle
+table_data = superlative_jahr_partei_df.pivot(index='Partei', columns='Jahr', values='Häufigkeit_Superlative')
+
+# Erstellen der Tabelle
+plt.figure(figsize=(10, 6))
+plt.table(cellText=table_data.values, rowLabels=table_data.index, colLabels=table_data.columns, loc='center', bbox=[0.0,-1,1,1])
+
+# Formatierung der Tabelle
+plt.axis('off')
+plt.title('Häufigkeit der Superlative pro Jahr und Partei')
+plt.subplots_adjust(top=0.92) #Tabelle nach oben verschieben
+plt.tight_layout() #Abstand der Tabelle und der Überschrift verringern
+plt.show()
