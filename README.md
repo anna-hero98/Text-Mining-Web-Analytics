@@ -13,6 +13,7 @@ Außerdem sollte mittels "python -m spacy download de_core_news_sm" das Paket in
 
 
 **Pythonversion:** 
+
 3.12.1
 
 
