@@ -1,8 +1,13 @@
 Project:
 
-Im folgenden Projekt werden Bundestagsreden eingelesen und einzelne Reden herausgeschnitten. 
+Im folgenden Projekt werden Bundestagsreden eingelesen und auf sprachliche Auffälligkeiten analysiert, mit dem Ziel Reden der CDU/CSU und der Linken vor und nach Einzug der AFD in den Bundestag auf Unterschiede zu analysieren. 
 Dafür sollte zuerst Redenextraktion.py laufen gelassen werden.
-Danach werden die extrahierten Reden auf verschiedene sprachliche Auffälligkeiten analysiert.
+Danach können mit den übrigen Modulen die extrahierten Reden auf verschiedene sprachliche Auffälligkeiten analysiert.
+
+Installationsanleitung:
+Die Dateien aus der requirements.txt müssen installiert werden. 
+Außerdem sollte mittels "python -m spacy download de_core_news_sm" das Paket installiert werden, welches die deutsche Sprache analysiert.
+
 
 
 Pythonversion: 
