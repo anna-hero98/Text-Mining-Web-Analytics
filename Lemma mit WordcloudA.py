@@ -1,37 +1,52 @@
+import pandas as pd
 import collections
 import spacy
 from collections import Counter
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
-import pandas as pd
 
-# Laden des deutschen NLP-Modells
-nlp = spacy.load("de_core_news_sm")
-nlp.max_length = 5000000
+# Laden des deutschen Sprachmodells von Spacy
+nlp = spacy.load('de_core_news_sm')
+nlp.max_length = 49027203
 
-# Laden der CSV-Datei
-data = pd.read_csv("extracted_data.csv").head(n=600).dropna()
+# Laden der CSV-Datei "extracted_data_new_version.csv" und der CSV-Datei "vornamen"
+data = pd.read_csv("extracted_data_new_version.csv", sep=";")
+vornamen = pd.read_csv("vornamen.csv")
 
+# Erstellen einer Liste aus den Vornamen in der CSV-Datei
+vornamen_liste = vornamen["vorname"].tolist()
 
-# Alle Texte aus der Spalte "Text" zu einem einzigen Text zusammenführen
-#oder weitere Bedingungen einfügen
-text = " ".join(data['Text'])
+# Filtern auf die Partei und die Zeit
+cdu_vor_2017 = data[(data['Partei'] == "CDU/CSU") & (data['Jahr'] < 2017)]
+cdu_nach_2017 = data[(data['Partei'] == "CDU/CSU") & (data['Jahr'] > 2017)]
+linke_vor_2017 = data[(data['Partei'] == "DIE LINKE") & (data['Jahr'] < 2017)]
+linke_nach_2017 = data[(data['Partei'] == "DIE LINKE") & (data['Jahr'] > 2017)]
 
-# spaCy-Verarbeitung
-doc = nlp(text)
+# Funktion zur Erstellung von Word Clouds für gegebene Daten
+def wordcloud_create(data, title):
+    # Alle Texte aus der Spalte "Text" zu einem einzigen Text zusammenführen
+    text = " ".join(data['Text'])
 
-# Lemmatisierung und Frequenzzählung
-lemmas = [token.lemma_.lower() for token in doc if token.is_alpha and not token.is_stop]
-lemma = collections.Counter(lemmas)
-lemma_freq = Counter(lemmas)
+    # spaCy-Verarbeitung
+    doc = nlp(text)
 
-wc = WordCloud().generate_from_frequencies(lemma_freq)
-plt.imshow(wc)
-plt.show()
+    # Lemmatisierung und Frequenzzählung der Reden
+    lemmas = [token.lemma_.lower() for token in doc if token.is_alpha and not token.is_stop and token.text.lower() not in ["beifall", "ausschuss", "drucksache"] and token.text.lower() not in vornamen_liste]
+    lemma_frequenz = Counter(lemmas)
 
-# Sortieren der Frequenzen in absteigender Reihenfolge
-for lemma, freq in lemma_freq.most_common():
-    print(f"{lemma}: {freq}")
-else:
-    print("Keine Dokumente gefunden.")
+    # Erstellen der Word Cloud nur wenn Lemmata gefunden wurden
+    if lemma_frequenz:
+        # Erstellen der Word Cloud
+        wordcloud = WordCloud(width=800, height=400, background_color='white').generate_from_frequencies(lemma_frequenz)
 
+        # Anzeigen der Word Cloud
+        plt.title(title)
+        plt.axis('off')
+        plt.imshow(wordcloud, interpolation='bilinear')
+        plt.show()
+
+# Word Clouds für die verschiedenen Parteien und Zeiträume erstellen
+wordcloud_create(cdu_vor_2017, 'Wortwahl der CDU/CSU vor Eintritt der AfD')
+wordcloud_create(cdu_nach_2017, 'Wortwahl der CDU/CSU nach Eintritt der AfD')
+wordcloud_create(linke_vor_2017, 'Wortwahl der LINKEN vor Eintritt der AfD')
+wordcloud_create(linke_nach_2017, 'Wortwahl der LINKEN nach Eintritt der AfD')
