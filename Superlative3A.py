@@ -32,9 +32,3 @@ print("Superlativ - Häufigkeit")
 for superlativ, haeufigkeit in superlative_count.most_common():
     print(f"{superlativ} - {haeufigkeit}")
 
-
-## Visualiseurng der Ergebnisse --> Tabelle mit Anzahl. Zeitangabe (1x Tabelle: Vor AFD Eintritt)
-## (1x Tabelle: Nach AFD Eintritt), mit Zeile pro Jahr + Häufigste Superlative auflisten
-
-
-
