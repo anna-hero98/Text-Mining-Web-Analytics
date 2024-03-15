@@ -45,7 +45,7 @@ for jahr, dokumentnr, name, partei, thema, titel in zip(input_df['Jahr'], input_
                 words = search_sentence.split()
                 shortened_title = search_sentence
 
-                if len(words) > 2:
+                if len(words) > 4:
                     shortened_title = " ".join(words[2:-1])
 
                 # Sucht nach dem zweiten Vorkommen des Titels
