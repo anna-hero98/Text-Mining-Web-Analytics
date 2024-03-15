@@ -1,3 +1,5 @@
+# Dieses Modul analysiert welche Kraftausdrücke die extrahierten Reden enthalten. 
+
 import nltk
 import spacy
 import pandas as pd
