@@ -1,3 +1,5 @@
+# Dieses Modul ruft die Reden der Bundestagsapi anhand eines im Input angegebenen Parameters auf, sucht die Rede des Politikers heraus und speichert das Ergebnis im extracted Datafram
+
 import requests
 import pandas as pd
 import re
