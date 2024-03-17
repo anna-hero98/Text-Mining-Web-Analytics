@@ -1,51 +1,61 @@
 #Dieses Skript zählt die Zwischenrufe, die von der CDU/CSU und den Linken für bestimmte Themen gemacht wurden. 
 #Die Zwischenrufe werden dabei jeweils für den Zeitraum vor und nach 2017 betrachtet. Weiterhin werden die Ergebnisse in einer Tabelle visualisiert.
-
 import pandas as pd
 from matplotlib import pyplot as plt
 
 # Laden der CSV-Datei "extracted_data_new_version.csv"
 data = pd.read_csv("extracted_data_new_version.csv", sep=";")
 
-# Leere Datenstruktur erstellen für Zählen von Zwischenrufen pro Partei, Jahr und Thema
-zäher_partei_jahr_thema = {}
+# Initialisierung der Zähler pro Jahr und Thema für CDU/CSU und Die Linken
+cdu_counts_per_year = {}
+die_linke_counts_per_year = {}
 
-# Durchlaufen der Daten, Werte werden paarweise übermittelt
-for text, year, party, theme in zip(data['Text'], data['Jahr'], data['Partei'], data['Thema']):
-    # Initialisierung des Zählers für die aktuelle Partei, das aktuelle Jahr und das aktuelle Thema
-    if (party, year, theme) not in zäher_partei_jahr_thema:
-        zäher_partei_jahr_thema[(party, year, theme)] = 0
+# For Schleife über die CSV Daten mit dem Zähler der Zwischenrufe
+for text, year, themes in zip(data['Text'], data['Jahr'], data['Thema']):
+    # Initialisierung der Zähler für das aktuelle Jahr
+    if year not in cdu_counts_per_year:
+        cdu_counts_per_year[year] = {}
+    if year not in die_linke_counts_per_year:
+        die_linke_counts_per_year[year] = {}
 
-    # Zwischenrufe für CDU/CSU zählen
-    zäher_partei_jahr_thema[(party, year, theme)] += text.count("[CDU/CSU]:")
+    # Initialisierung der Themenzähler für das jeweilige Jahr
+    for theme in themes.split(','):
+        theme = theme.strip()  # Leerzeichen entfernen
+        if theme not in cdu_counts_per_year[year]:
+            cdu_counts_per_year[year][theme] = 0
+        if theme not in die_linke_counts_per_year[year]:
+            die_linke_counts_per_year[year][theme] = 0
 
-    # Zwischenrufe für Die Linke zählen
-    zäher_partei_jahr_thema[(party, year, theme)] += text.count("[DIE LINKE]:")
+        # Zählen der Zwischenrufe für CDU/CSU und Die Linke pro Thema
+        cdu_counts_per_year[year][theme] += text.count("[CDU/CSU]:")
+        die_linke_counts_per_year[year][theme] += text.count("[DIE LINKE]:")
 
-# Konvertieren der aggregierten Daten in einen DataFrame für Visualisierung
-zwischenrufe_partei_jahr_thema_df = pd.DataFrame(list(zäher_partei_jahr_thema.items()), columns=['Partei_Jahr_Thema', 'Anzahl_Zwischenrufe'])
+# Erstellen einer DataFrame für die Anzeige der Ergebnisse in einer Tabelle
+table_data_cdu = pd.DataFrame(cdu_counts_per_year).fillna(0).astype(int)
+table_data_linke = pd.DataFrame(die_linke_counts_per_year).fillna(0).astype(int)
 
-# Aufteilen der kombinierten Spalte 'Partei_Jahr_Thema' in separate Spalten für Partei, Jahr und Thema
-zwischenrufe_partei_jahr_thema_df[['Partei', 'Jahr', 'Thema']] = pd.DataFrame(zwischenrufe_partei_jahr_thema_df['Partei_Jahr_Thema'].tolist(), index=zwischenrufe_partei_jahr_thema_df.index)
+# Sortieren der Spalten (Jahre) in aufsteigender Reihenfolge
+table_data_cdu_sorted = table_data_cdu.sort_index(axis=1)
+table_data_linke_sorted = table_data_linke.sort_index(axis=1)
 
-# Tabelle anzeigen
-print(zwischenrufe_partei_jahr_thema_df)
+# Transponieren der DataFrames
+table_data_cdu_transposed = table_data_cdu_sorted.T
+table_data_linke_transposed = table_data_linke_sorted.T
 
-# Daten für die Tabelle
-table_data = zwischenrufe_partei_jahr_thema_df.pivot(index=['Partei', 'Thema'], columns='Jahr', values='Anzahl_Zwischenrufe')
+# Umwandeln der Jahre in Zeichenfolgen
+table_data_cdu_transposed.columns = table_data_cdu_transposed.columns.astype(str)
+table_data_linke_transposed.columns = table_data_linke_transposed.columns.astype(str)
 
-# Erstellen der Tabelle
-plt.figure(figsize=(12, 6))
-table = plt.table(cellText=table_data.values, rowLabels=table_data.index, colLabels=table_data.columns, loc='center', cellLoc='center', bbox=[0.0,0.4,1,0.5])
-
-# Formatierung der Tabelle
+# Erstellen der Tabelle für CDU/CSU
+plt.figure(figsize=(10, 4))
+plt.table(cellText=table_data_cdu_sorted.values, rowLabels=table_data_cdu_sorted.index, colLabels=table_data_cdu_sorted.columns, loc='center', bbox=[0.1,0.5,0.8,0.5])
 plt.axis('off')
+plt.title('Anzahl der Zwischenrufe von CDU/CSU pro Thema und Jahr\n')
+plt.show()
 
-# Festlegen der Breite der Spalten
-col_widths = [0.1] * len(table_data.columns)
-
-# Tabelle nadh rechts verschieben
-plt.subplots_adjust(left=0.4, bottom=0.1, top=0.9)
-
-plt.title('Anzahl der Zwischenrufe pro Jahr, Partei und Thema')
+# Erstellen der Tabelle für Die Linke
+plt.figure(figsize=(10, 4))
+plt.table(cellText=table_data_linke_sorted.values, rowLabels=table_data_linke_sorted.index, colLabels=table_data_linke_sorted.columns, loc='center', bbox=[0.1,0.5,0.8,0.5])
+plt.axis('off')
+plt.title('Anzahl der Zwischenrufe von Die Linke pro Thema und Jahr\n')
 plt.show()
