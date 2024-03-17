@@ -21,8 +21,6 @@ Außerdem sollte mittels "python -m spacy download de_core_news_sm" das Paket in
 
 counter ~= 3.9
 
-match~=0.3.2
-
 matplotlib~=3.8.3
 
 nltk~=3.8.1
