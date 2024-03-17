@@ -25,8 +25,6 @@ matplotlib~=3.8.3
 
 nltk~=3.8.1
 
-numpy==1.26.3
-
 pandas==2.2.0
 
 regex==2023.12.25
