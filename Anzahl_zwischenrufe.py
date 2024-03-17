@@ -1,48 +1,46 @@
 #Dieses Skript zählt die Zwischenrufe, die von der CDU/CSU und den Linken gemacht wurden. 
 #Die Zwischenrufe werden dabei jeweils für den Zeitraum vor und nach 2017 betrachtet. Weiterhin werden die Ergebnisse in einer Tabelle visualisiert.
-
 import pandas as pd
 from matplotlib import pyplot as plt
 
 # Laden der CSV-Datei "extracted_data_new_version.csv"
 data = pd.read_csv("extracted_data_new_version.csv", sep=";")
 
-# Leere Datenstruktur erstellen für Zählen von Zwischenrufen pro Partei und Jahr
-zäher_partei_jahr = {}
+# Initialisieren der Zähler pro Jahr
+cdu_counts_per_year = {}
+die_linke_counts_per_year = {}
 
-# Durchlaufen der Daten, Werte werden paarweise übermittelt
-for text, year, party in zip(data['Text'], data['Jahr'], data['Partei']):
-    # Initialisierung des Zählers für die aktuelle Partei und das aktuelle Jahr
-    if (party, year) not in zäher_partei_jahr:
-        zäher_partei_jahr[(party, year)] = 0
+# Durchlaufen der Daten aus der CSV
+for text, year in zip(data['Text'], data['Jahr']):
+    # Initialisieren der Zähler für das aktuelle Jahr
+    if year not in cdu_counts_per_year:
+        cdu_counts_per_year[year] = 0
+    if year not in die_linke_counts_per_year:
+        die_linke_counts_per_year[year] = 0
 
     # Zwischenrufe für CDU/CSU zählen
-    zäher_partei_jahr[(party, year)] += text.count("[CDU/CSU]:")
+    cdu_counts_per_year[year] += text.count("[CDU/CSU]:")
 
     # Zwischenrufe für Die Linke zählen
-    zäher_partei_jahr[(party, year)] += text.count("[DIE LINKE]:")
+    die_linke_counts_per_year[year] += text.count("[DIE LINKE]:")
 
-# Konvertieren der aggregierten Daten in einen DataFrame für Visualisierung
-zwischenrufe_partei_jahr_df = pd.DataFrame(list(zäher_partei_jahr.items()),
-                                            columns=['Partei_Jahr', 'Anzahl_Zwischenrufe'])
+# Erstellen eines DataFrames für die Anzeige der Ergebnisse in einer Tabelle
+table_data = pd.DataFrame({'Jahr': list(cdu_counts_per_year.keys()),
+                           'CDU/CSU': list(cdu_counts_per_year.values()),
+                           'DIE LINKE': list(die_linke_counts_per_year.values())})
 
-# Aufteilen der kombinierten Spalte 'Partei_Jahr' in separate Spalten für Partei und Jahr
-zwischenrufe_partei_jahr_df[['Partei', 'Jahr']] = pd.DataFrame(zwischenrufe_partei_jahr_df['Partei_Jahr'].tolist(),
-                                                                index=zwischenrufe_partei_jahr_df.index)
+# Sortieren der Jahre aufsteigend
+table_data = table_data.sort_values(by='Jahr')
 
-# Tabelle anzeigen
-print(zwischenrufe_partei_jahr_df)
+# Setzen der Jahre als Index
+table_data.set_index('Jahr', inplace=True)
 
-# Daten für die Tabelle
-table_data = zwischenrufe_partei_jahr_df.pivot(index='Partei', columns='Jahr', values='Anzahl_Zwischenrufe')
+# Anzeige der transponierten Tabelle
+print(table_data)
 
-# Erstellen der Tabelle
+# Erstellen und Formatieren der Tabelle
 plt.figure(figsize=(10, 6))
-plt.table(cellText=table_data.values, rowLabels=table_data.index, colLabels=table_data.columns, loc='center', bbox=[0.0,-1,1,1])
-
-# Formatierung der Tabelle
+plt.table(cellText=table_data.T.values, rowLabels=table_data.columns, colLabels=table_data.index, loc='center', bbox=[0.1,0.8,0.8,0.15])
 plt.axis('off')
-plt.title('Häufigkeit der Zwischenrufe pro Jahr und Partei')
-plt.subplots_adjust(top=0.92) #Tabelle nach oben verschieben
-plt.tight_layout() #Abstand der Tabelle und der Überschrift verringern
+plt.title('Anzahl der Zwischenrufe von CDU/CSU und den linken pro Jahr\n')
 plt.show()
